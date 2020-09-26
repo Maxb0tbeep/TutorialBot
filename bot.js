@@ -3,13 +3,21 @@ const client = new discord.Client();
 const config = require("./config/config.json");
 const TOKEN = config.BOT.TOKEN;
 const PREFIX = config.BOT.PREFIX;
+var serverAmount;
+
+function updateServerCount(){
+    serverAmount = client.guilds.cache.size;
+    setTimeout(updateServerCount, 5000);
+}
 
 client.on("ready", () => {
-    console.log(`${client.user.tag} has logged in!`)
+    console.log(`${client.user.tag} has logged in!`);
+    updateServerCount();
+    client.user.setActivity(serverAmount + " Servers!", {type : "WATCHING"});
 })
 
 client.on("message", (message) => {
-    if(message.author.bot) {return;}
+    // if(message.author.bot) {return;}
     
     const isValidCommand = (message, cmdName) => (message.content.toLowerCase().startsWith(PREFIX + cmdName));
     if(isValidCommand(message, "hello")){
@@ -20,6 +28,52 @@ client.on("message", (message) => {
         const randomNumber = () => Math.floor(Math.random() * 10) + 1;
 
         message.channel.send(`${message.author.username} rolled a ` + randomNumber());
+    }
+
+    if(isValidCommand(message, "ban")){
+        if(message.member.hasPermission("BAN_MEMBERS")){
+            const memberID = message.content.substring(message.content.indexOf(" ") + 1);
+            const member = message.guild.members.cache.get(memberID);
+
+            if(member){
+                if(member.hasPermission("ADMINISTRATOR")){
+                    message.channel.send("This user is an owner or an admin, you can't ban them.");
+                }
+                else{
+                    member.ban();
+                    message.channel.send("Successfully banned user " + memberID);
+                }
+            }
+            else{
+                message.channel.send("Couldn't find that user.");
+            }
+        }
+        else{
+            message.reply("you don't have the needed permissions to do this!");
+        }
+    }
+
+    if(isValidCommand(message, "kick")){
+        if(message.member.hasPermission("KICK_MEMBERS")){
+            const memberID = message.content.substring(message.content.indexOf(" ") + 1);
+            const member = message.guild.members.cache.get(memberID);
+
+            if(member){
+                if(member.hasPermission("ADMINISTRATOR")){
+                    message.channel.send("This user is an owner or an admin, you can't kick them.");
+                }
+                else{
+                    member.kick();
+                    message.channel.send("Successfully kicked user " + memberID);
+                }
+            }
+            else{
+                message.channel.send("Couldn't find that user.");
+            }
+        }
+        else{
+            message.reply("you don't have the needed permissions to do this!");
+        }
     }
 
     if(isValidCommand(message, "embed")){
