@@ -1,6 +1,7 @@
 const discord = require("discord.js");
 const client = new discord.Client();
 const config = require("./config/config.json");
+const profanities = require("profanities");
 const TOKEN = config.BOT.TOKEN;
 const PREFIX = config.BOT.PREFIX;
 var serverAmount;
@@ -17,9 +18,10 @@ client.on("ready", () => {
 })
 
 client.on("message", (message) => {
-    // if(message.author.bot) {return;}
-    
+    if(message.author.bot) {return;}
     const isValidCommand = (message, cmdName) => (message.content.toLowerCase().startsWith(PREFIX + cmdName));
+
+
     if(isValidCommand(message, "hello")){
         message.channel.send(`Hello ${message.author.username}!`)
     }
@@ -90,6 +92,21 @@ client.on("message", (message) => {
 
 
         message.channel.send(embed);
+    }
+
+    for(x = 0; x < profanities.length; x++){
+        const msg = message.content.toLowerCase();
+        if(msg.includes(profanities[x])){
+            const profanityEmbed = new discord.MessageEmbed();
+            const profanityMessage = `**${message.author.username}**! You can't say this! if you continue to break the rules, you may be **banned**`;
+            profanityEmbed.addField("Warning", profanityMessage);
+            profanityEmbed.setColor("#ff1c1c");
+            profanityEmbed.setAuthor(message.author.tag, message.author.displayAvatarURL);
+            profanityEmbed.setTimestamp();
+            message.delete();
+            message.channel.send(profanityEmbed);
+        }
+        return;
     }
 })
 
